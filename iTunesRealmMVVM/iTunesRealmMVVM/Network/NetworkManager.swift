@@ -7,14 +7,17 @@
 
 import Foundation
 
-final class NetworkManager {
-    static let shared = NetworkManager()
+final class NetworkManager: NetworkManagerProtocol {
     var dataCounter = 1
     var imageCounter = 1
 
-    private init() {}
+    private var storageManager: StorageManagerProtocol?
 
-    func fetchAlbums(albumName: String, completion: @escaping ([Album]?, Error?) -> Void) {
+    init(storageManager: StorageManagerProtocol) {
+        self.storageManager = storageManager
+    }
+
+    func loadAlbums(albumName: String, completion: @escaping ([Album]?, Error?) -> Void) {
         let baseURL = "https://itunes.apple.com/search"
         let term = albumName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let urlString = "\(baseURL)?term=\(term)&entity=album&attribute=albumTerm"
@@ -58,7 +61,7 @@ final class NetworkManager {
         }.resume()
     }
 
-    func fetchImage(from urlString: String, completion: @escaping (Data?, Error?) -> Void) {
+    func loadImage(from urlString: String, completion: @escaping (Data?, Error?) -> Void) {
         guard let url = URL(string: urlString) else {
             print("Invalid URL for image")
             completion(nil, NetworkError.invalidURL)
